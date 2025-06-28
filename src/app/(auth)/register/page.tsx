@@ -7,38 +7,59 @@ import Link from "next/link";
 import { useState } from "react";
 import { Eye, EyeOff, Loader2Icon } from "lucide-react";
 import Image from "next/image";
+import toast, { Toaster } from "react-hot-toast";
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const formSchema = z.object({
-  username: z.string().min(1, "Username field cannot be empty"),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
+import axios from "axios";
+
+const registerSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  role: z.enum(["User", "Admin"], {
+    errorMap: () => ({ message: "Role is required" }),
+  }),
 });
 
-type FormData = z.infer<typeof formSchema>;
+type FormData = z.infer<typeof registerSchema>;
 
-export default function Login() {
+export default function Register() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const {
-    register: login,
+    register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log("login Data:", data);
-    router.push("/");
+  const onSubmit = async (data: FormData) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/users`,
+        data
+      );
+      toast.success("Register Successfull!");
+      router.push("/login");
+      console.log("Register Response:", response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Register Error:", error);
+      toast.error("Register Failed!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="flex items-center justify-center h-screen bg-white md:bg-[#F3F4F6]">
+      <Toaster />
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col w-[400px] space-y-4 p-8 rounded-md bg-white"
@@ -60,7 +81,7 @@ export default function Login() {
           <Input
             type="text"
             placeholder="Input Username"
-            {...login("username")}
+            {...register("username")}
           />
           {errors.username && (
             <div className="text-sm text-red-500">
@@ -78,20 +99,57 @@ export default function Login() {
             <Input
               type={showPassword ? "text" : "password"}
               placeholder="Input Password"
-              {...login("password")}
+              {...register("password")}
               className="pr-10"
             />
             <div
               className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700"
               onClick={() => setShowPassword((prev) => !prev)}
             >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
             </div>
           </div>
           {errors.password && (
             <div className="text-sm text-red-500">
               {errors.password.message}
             </div>
+          )}
+        </div>
+
+        {/* Dropdown Role */}
+        <div>
+          <label className="block mb-2 font-medium text-gray-900">Role</label>
+          <div className="relative">
+            <select
+              {...register("role")}
+              className="appearance-none px-3 py-2 pr-10 border border-gray-300 rounded-md text-sm w-full"
+              defaultValue=""
+            >
+              <option disabled value="">
+                Select Role
+              </option>
+              <option value="User">User</option>
+              <option value="Admin">Admin</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {errors.role && (
+            <div className="text-sm text-red-500">{errors.role.message}</div>
           )}
         </div>
 
@@ -104,18 +162,18 @@ export default function Login() {
           {loading ? (
             <>
               <Loader2Icon className="animate-spin mr-2" />
-              loading
+              Loading...
             </>
           ) : (
-            "login"
+            "Register"
           )}
         </Button>
 
         {/* Link to Login */}
         <div className="text-sm text-center">
-          Don`t have an account?{" "}
-          <Link href="/register" className="text-blue-500 underline">
-            Register
+          Already have an account?{" "}
+          <Link href="/login" className="text-blue-500 underline">
+            Login
           </Link>
         </div>
       </form>
