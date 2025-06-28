@@ -42,17 +42,21 @@ export default function Login() {
       );
       const user = response.data[0];
 
-      if (user && user.password === data.password) {
+      if (!user) {
+        toast.error("Username not found");
+      } else if (user.password !== data.password) {
+        toast.error("Incorrect password");
+      } else {
         localStorage.setItem("userId", user.id);
         localStorage.setItem("userRole", user.role || "user");
         localStorage.setItem("isLoggedIn", "true");
-        toast.success("Login Successfull!");
+
+        toast.success("Login successful!");
         router.push("/");
-      } else {
-        toast.error("Invalid username or password");
       }
     } catch (error) {
       console.error("Login error:", error);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }

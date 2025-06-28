@@ -41,17 +41,27 @@ export default function Register() {
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     try {
+      const checkUser = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/users?username=${data.username}`
+      );
+
+      if (checkUser.data.length > 0) {
+        toast.error("Username already exists");
+        setLoading(false);
+        return;
+      }
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/users`,
         data
       );
-      toast.success("Register Successfull!");
-      router.push("/login");
+
+      toast.success("Register successful!");
       console.log("Register Response:", response.data);
-      setLoading(false);
+      router.push("/login");
     } catch (error) {
       console.error("Register Error:", error);
-      toast.error("Register Failed!");
+      toast.error("Register failed!");
     } finally {
       setLoading(false);
     }
