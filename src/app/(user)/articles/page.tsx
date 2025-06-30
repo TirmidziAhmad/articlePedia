@@ -1,5 +1,5 @@
 "use client";
-
+import AuthWrapper from "@/components/auth/AuthWrapper";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search } from "lucide-react";
@@ -129,7 +129,7 @@ export default function Articles() {
   };
 
   return (
-    <>
+    <AuthWrapper>
       <section
         id="hero"
         className="h-screen relative flex items-center justify-center text-center px-4"
@@ -314,6 +314,6 @@ export default function Articles() {
           )}
         </div>
       </section>
-    </>
+    </AuthWrapper>
   );
 }

@@ -8,6 +8,13 @@ import { useState } from "react";
 import { Eye, EyeOff, Loader2Icon } from "lucide-react";
 import Image from "next/image";
 import toast, { Toaster } from "react-hot-toast";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -18,7 +25,7 @@ import axios from "axios";
 const registerSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  role: z.enum(["User", "Admin"], {
+  role: z.enum(["user", "admin"], {
     errorMap: () => ({ message: "Role is required" }),
   }),
 });
@@ -34,6 +41,7 @@ export default function Register() {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<FormData>({
     resolver: zodResolver(registerSchema),
   });
@@ -41,27 +49,33 @@ export default function Register() {
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     try {
-      const checkUser = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/users?username=${data.username}`
-      );
+      // const checkUser = await axios.get(
+      //   `${process.env.NEXT_PUBLIC_API_URL}/users?username=${data.username}`
+      // );
 
-      if (checkUser.data.length > 0) {
-        toast.error("Username already exists");
-        setLoading(false);
-        return;
-      }
+      // const existingUser = checkUser.data.find(
+      //   (user: { username: string }) => user.username === data.username
+      // );
 
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/users`,
-        data
-      );
+      // if (existingUser) {
+      //   toast.error("Username already exists");
+      //   setLoading(false);
+      //   return;
+      // }
 
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/users`, data);
       toast.success("Register successful!");
-      console.log("Register Response:", response.data);
       router.push("/login");
     } catch (error) {
-      console.error("Register Error:", error);
-      toast.error("Register failed!");
+      if (axios.isAxiosError(error)) {
+        console.error("Axios Error:", error.response?.data || error.message);
+        toast.error(
+          "Register failed: " + (error.response?.data || error.message)
+        );
+      } else {
+        console.error("Unknown Error:", error);
+        toast.error("An unexpected error occurred.");
+      }
     } finally {
       setLoading(false);
     }
@@ -129,37 +143,24 @@ export default function Register() {
         {/* Dropdown Role */}
         <div>
           <label className="block mb-2 font-medium text-gray-900">Role</label>
-          <div className="relative">
-            <select
-              {...register("role")}
-              className="appearance-none px-3 py-2 pr-10 border border-gray-300 rounded-md text-sm w-full"
-              defaultValue=""
-            >
-              <option disabled value="">
-                Select Role
-              </option>
-              <option value="User">User</option>
-              <option value="Admin">Admin</option>
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </div>
-
+          <Select
+            onValueChange={(value) => {
+              // manually set value to react-hook-form
+              setValue("role", value as "user" | "admin");
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select Role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="user">User</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+            </SelectContent>
+          </Select>
           {errors.role && (
-            <div className="text-sm text-red-500">{errors.role.message}</div>
+            <div className="text-sm text-red-500 mt-1">
+              {errors.role.message}
+            </div>
           )}
         </div>
 

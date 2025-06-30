@@ -40,19 +40,33 @@ export default function Login() {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/users?username=${data.username}`
       );
+
       const user = response.data[0];
 
       if (!user) {
         toast.error("Username not found");
-      } else if (user.password !== data.password) {
+        setLoading(false);
+        return;
+      }
+      const userDetails = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/${user.id}`
+      );
+
+      if (userDetails.data.password !== data.password) {
         toast.error("Incorrect password");
       } else {
         localStorage.setItem("userId", user.id);
-        localStorage.setItem("userRole", user.role || "user");
+        localStorage.setItem("role", user.role);
+        localStorage.setItem("password", user.password);
+        localStorage.setItem("username", user.username);
         localStorage.setItem("isLoggedIn", "true");
 
         toast.success("Login successful!");
-        router.push("/");
+        if (user.role === "admin") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/user/articles");
+        }
       }
     } catch (error) {
       console.error("Login error:", error);

@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function UserHeader() {
   const router = useRouter();
@@ -12,7 +13,7 @@ export default function UserHeader() {
     // document.cookie = 'isLoggedIn=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     // document.cookie = 'userRole=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 
-    alert("Anda telah logout.");
+    toast.success("Anda telah logout.");
     router.push("/login"); // Redirect ke halaman login
   };
 
