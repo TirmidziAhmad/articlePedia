@@ -65,7 +65,7 @@ export default function Login() {
         if (user.role === "admin") {
           router.push("/admin/dashboard");
         } else {
-          router.push("/user/articles");
+          router.push("/articles");
         }
       }
     } catch (error) {
