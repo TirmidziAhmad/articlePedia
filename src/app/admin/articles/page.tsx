@@ -46,11 +46,7 @@ export default function ArticlesPage() {
   ];
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-      <div className="flex items-center">
-        <h1 className="text-lg font-semibold md:text-2xl">Articles</h1>
-      </div>
-
+    <div className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 border rounded-lg">
       <div className="flex flex-col gap-4">
         {/* Stats and search/filter section */}
         <div className="flex flex-col gap-2">
@@ -60,7 +56,6 @@ export default function ArticlesPage() {
 
           <div className="flex items-center justify-between gap-2">
             <div className="flex gap-2">
-              <Input placeholder="Search articles..." className="max-w-sm" />
               <Select>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Category" />
@@ -73,6 +68,7 @@ export default function ArticlesPage() {
                   ))}
                 </SelectContent>
               </Select>
+              <Input placeholder="Search articles..." className="max-w-sm" />
             </div>
 
             <Button className="bg-blue-600 text-white hover:bg-blue-700">
@@ -109,13 +105,25 @@ export default function ArticlesPage() {
                   <TableCell>{article.category}</TableCell>
                   <TableCell>{article.createdAt}</TableCell>
                   <TableCell className="flex justify-end gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="underline text-blue-600"
+                    >
                       Preview
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="underline text-blue-600"
+                    >
                       Edit
                     </Button>
-                    <Button variant="destructive" size="sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="underline text-red-600"
+                    >
                       Delete
                     </Button>
                   </TableCell>

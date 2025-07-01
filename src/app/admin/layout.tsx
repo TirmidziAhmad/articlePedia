@@ -1,19 +1,26 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Newspaper, Tags, LogOut, Menu } from "lucide-react"; // Removed LayoutDashboardIcon as it's not used
+import { Newspaper, Tags, LogOut, Menu } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation"; // Import useRouter for client-side path access
+import { usePathname, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { useState, useEffect } from "react";
 
-// Define a type for your navigation items
 type NavItem = {
   href: string;
   label: string;
-  icon: React.ElementType; // Use React.ElementType for component types
+  icon: React.ElementType;
 };
 
-// Define your navigation items as an array of NavItem
 const adminNavItems: NavItem[] = [
   {
     href: "/admin/articles",
@@ -28,7 +35,7 @@ const adminNavItems: NavItem[] = [
 ];
 
 const mainNavItems: NavItem[] = [
-  ...adminNavItems, // Re-use admin nav items
+  ...adminNavItems,
   {
     href: "/logout",
     label: "Logout",
@@ -41,30 +48,47 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname(); // Get the current pathname
+  const pathname = usePathname();
+  const router = useRouter();
 
-  // Helper function to capitalize the first letter of a string
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedUsername = localStorage.getItem("username");
+      setUsername(storedUsername);
+    }
+  }, []);
+
+  const firstInitial = username ? username.charAt(0).toUpperCase() : "?";
   const capitalizeFirstLetter = (str: string) => {
     if (!str) return "";
     return str.charAt(0).toUpperCase() + str.slice(1);
   };
 
-  // Determine the current page title
-  // Add a check for 'pathname' being defined before calling split()
   const currentPageTitle =
     pathname === "/admin"
       ? "Admin"
       : capitalizeFirstLetter(
           (pathname ? pathname.split("/").pop() : "") || "Admin"
-        ); // Add a check for pathname before splitting
+        );
+
+  const logout = () => {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("username");
+    localStorage.removeItem("password");
+    localStorage.removeItem("role");
+    toast.success("log out successfully");
+    router.push("/login");
+  };
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       {/* Mobile Sidebar */}
-      <div className="hidden border-r bg-muted/40 md:block bg-blue-600">
-        <div className="flex h-full max-h-screen flex-col gap-2">
+      <div className="hidden border-r bg-muted/40 md:block ">
+        <div className="flex h-full max-h-screen flex-col gap-2 bg-blue-500">
           <div className="flex h-14 items-center  px-4 lg:h-[60px] lg:px-6">
-            <Link href="/admin" className="flex items-center font-semibold">
+            <Link href="#" className="flex items-center font-semibold">
               <Image
                 src="/logo.png"
                 alt="Logo"
@@ -74,25 +98,25 @@ export default function AdminLayout({
               />
             </Link>
           </div>
-          <div className="flex-1">
-            <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+          <div className="flex-1 ">
+            <nav className="grid items-start px-2 text-sm font-medium lg:px-4 ">
               {adminNavItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary  text-white"
                 >
-                  <item.icon className="h-4 w-4 text-white " />
+                  <item.icon className="h-4 w-4 " />
                   {item.label}
                 </Link>
               ))}
-              <Link
-                href="/logout"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary mt-4 text-white"
+              <button
+                onClick={logout}
+                className="flex items-center gap-3 rounded-lg px-3  text-muted-foreground transition-all hover:text-primary mt-4 text-white"
               >
                 <LogOut className="h-4 w-4" />
                 Logout
-              </Link>
+              </button>
             </nav>
           </div>
         </div>
@@ -142,6 +166,28 @@ export default function AdminLayout({
           <div className="w-full flex-1">
             <h1 className="text-lg font-semibold">{currentPageTitle}</h1>
           </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-2 cursor-pointer">
+                <Avatar className="h-7 w-7">
+                  <AvatarImage src="" alt="User" />
+                  <AvatarFallback>
+                    {username ? firstInitial : "?"}
+                  </AvatarFallback>
+                </Avatar>
+                {username && (
+                  <span className="font-medium hidden md:inline text-black underline">
+                    {username}
+                  </span>
+                )}
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onClick={() => router.push("/account")}>
+                My Account
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
           {children}

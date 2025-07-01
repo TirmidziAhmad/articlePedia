@@ -9,6 +9,7 @@ export default function Account() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
+  const isAdmin = role == "admin";
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username") || "";
@@ -44,7 +45,7 @@ export default function Account() {
           </div>
 
           <Link
-            href="/articles"
+            href={isAdmin ? "/admin/articles" : "/articles"}
             className="bg-blue-500 rounded-lg w-full py-2 text-center text-white"
           >
             Back to home
